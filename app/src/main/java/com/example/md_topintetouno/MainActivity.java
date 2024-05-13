@@ -15,7 +15,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
+import com.example.md_topintetouno.databinding.ActivityMainBinding;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
 
 import java.util.ArrayList;
@@ -28,12 +30,16 @@ import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity implements OnItemClickListener {
 
-    @BindView(R.id.toolbar)
-    Toolbar toolbar;
-    @BindView(R.id.recyclerview)
-    RecyclerView recyclerview;
-    @BindView(R.id.containerMain)
-    CoordinatorLayout containerMain;
+
+
+        ActivityMainBinding binding;
+
+    //@BindView(R.id.toolbar)
+    //Toolbar toolbar;
+    //@BindView(R.id.recyclerview)
+    //RecyclerView recyclerview;
+   // @BindView(R.id.containerMain)
+ //   CoordinatorLayout containerMain;
 
     private ArtistaAdapter adapter;
 
@@ -42,8 +48,9 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
 
         configToolbar();
         configAdapter();
@@ -85,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
     }
 
     private void configToolbar() {
-        setSupportActionBar(toolbar);
+        setSupportActionBar(binding.toolbar);
     }
 
     private void configAdapter() {
@@ -93,8 +100,15 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
     }
 
     private void configRecyclerView() {
-        recyclerview.setLayoutManager(new LinearLayoutManager(this));
-        recyclerview.setAdapter(adapter);
+        binding.contentMain.recyclerview.setLayoutManager(new LinearLayoutManager(this));
+        binding.recyclerview.setAdapter(adapter);
+    }
+
+    private void configRecyclerView() {
+        // Accede al RecyclerView a través del binding de la vista incluida
+        RecyclerView recyclerView = binding.contentMain.recyclerview;
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(adapter);
     }
 
     @Override
@@ -115,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        //no tendo ni put" idea de donde saco el menu este kbron , asi que cree uno vacio xddd
         return true;
     }
 
@@ -146,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         sArtista.setLugarNacimiento(artista.getLugarNacimiento());
         sArtista.setOrden(artista.getOrden());
         sArtista.setNotas(artista.getNotas());
-        sArtista.setFotoUrl(artista.getFotoUrl());*/
+        sArtista.setFotoUrl(artista.getFotoUrl());
 
         Intent intent = new Intent(MainActivity.this, DetalleActivity.class);
         intent.putExtra(Artista.ID, artista.getId());
@@ -166,13 +181,15 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
                 .setPositiveButton(R.string.label_dialog_delete, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        try {
+                        try { //aqui he mandado un toast en luigar del sho mensaje aunque tal vez  devid e enviar un log.g
                             artista.delete();
                             adapter.remove(artista);
-                            showMessage(R.string.main_message_delete_success);
+                            Toast.makeText(MainActivity.this, R.string.main_message_delete_success, Toast.LENGTH_SHORT).show();
+                           // showMessage(R.string.main_message_delete_success);
                         } catch (Exception e) {
                             e.printStackTrace();
-                            showMessage(R.string.main_message_delete_fail);
+                            Toast.makeText(MainActivity.this, R.string.main_message_delete_fail, Toast.LENGTH_SHORT).show();
+                            //showMessage(R.string.main_message_delete_fail);
                         }
                     }
                 })
@@ -187,17 +204,29 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         if (resultCode == RESULT_OK && requestCode == 1){
             adapter.add(sArtista);
         }
-    }*/
 
-    @OnClick(R.id.fab)
-    public void addArtist() {
-        Intent intent = new Intent(MainActivity.this, AddArtistActivity.class);
-        intent.putExtra(Artista.ORDEN, adapter.getItemCount()+1);
+
+ //   @OnClick(R.id.fab)
+  //  public void addArtist() {
+    //    Intent intent = new Intent(MainActivity.this, AddArtistActivity.class);
+      //  intent.putExtra(Artista.ORDEN, adapter.getItemCount()+1);
         //startActivity(intent);
-        startActivityForResult(intent, 1);
-    }
+      //  startActivityForResult(intent, 1);
+    //}
 
     private void showMessage(int resource) {
         Snackbar.make(containerMain, resource, Snackbar.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        binding.fab.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, AddArtistActivity.class);
+            intent.putExtra(Artista.ORDEN, adapter.getItemCount()+1);
+            //startActivity(intent);
+            startActivityForResult(intent, 1);
+        });
     }
 }
